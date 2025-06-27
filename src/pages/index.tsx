@@ -141,7 +141,6 @@ export default function TalkDeckApp() {
     const title = inputText.trim()
     if (!title) {
       errors.title = "Pertanyaan wajib diisi"
-      return
     }
 
     if (!newQuestion.category_id) errors.category_id = "Kategori wajib dipilih"

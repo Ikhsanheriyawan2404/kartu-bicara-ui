@@ -1,69 +1,82 @@
-# React + TypeScript + Vite
+# 🃏 Kartu Bicara
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Kartu Bicara** adalah aplikasi permainan kartu percakapan interaktif untuk mempererat hubungan antar teman atau pasangan. Pemain saling menjawab pertanyaan dari kartu secara bergantian dalam sesi multiplayer real-time.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Teknologi yang Digunakan
 
-## Expanding the ESLint configuration
+- **Frontend**: [React + Vite](https://github.com/ikhsanheriyawan2404/kartu-bicara-ui)
+- **Backend**: [Node.js + Express + Colyseus](https://github.com/Ikhsanheriyawan2404/kartu-bicara-server)
+- **Realtime Multiplayer**: WebSocket via Colyseus
+- **Database**: PostgreSQL
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🎮 Fitur Utama
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- 🎲 **Permainan Kartu Percakapan**: Sesi permainan interaktif antar pemain.
+- 🔄 **Rotasi Giliran Otomatis**: Pemain mendapat giliran secara bergantian.
+- 📦 **Kategori Pertanyaan**: Tersedia kategori seperti "Teman" dan "Pasangan".
+- ✍️ **Tambah Pertanyaan Sendiri**: Pengguna dapat mengirimkan ide pertanyaan baru.
+- 🖥️ **Antarmuka Sederhana dan Ringan**: Dirancang untuk performa maksimal dan UX menyenangkan.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 🧑‍💻 Jalankan Secara Lokal
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/ikhsanheriyawan2404/kartu-bicara-server
+cd kartu-bicara-server
+````
+
+### 2. Instalasi
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 3. Jalankan Server
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm start
 ```
+
+### 4. Jalankan Frontend
+
+Clone repo frontend:
+
+```bash
+git clone https://github.com/ikhsanheriyawan2404/kartu-bicara-web
+cd kartu-bicara-web
+npm install
+npm run dev
+```
+
+---
+
+## 📌 Catatan
+
+* Pertanyaan divalidasi otomatis oleh AI sebelum disimpan.
+* Semua perubahan dilakukan melalui Pull Request.
+* Feel free untuk kontribusi
+
+---
+
+## 📜 Lisensi
+
+MIT – bebas digunakan dan dimodifikasi.
+
+---
+
+## 🙌 Kontribusi
+
+Kami sangat terbuka untuk kontribusi fitur baru, perbaikan bug, maupun ide pengembangan lainnya.
+
+```
+Silakan fork dan kirim Pull Request ke repository frontend/backend sesuai perubahanmu.
+```
+
+---
