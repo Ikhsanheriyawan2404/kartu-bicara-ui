@@ -41,7 +41,7 @@ export default function TalkDeckApp() {
   const [hasMoreQuestions, setHasMoreQuestions] = useState(true)
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [newQuestion, setNewQuestion] = useState({ title: "", category_id: 0 })
+  const [newQuestion, setNewQuestion] = useState({ title: "", category_id: 2 })
   const [formErrors, setFormErrors] = useState<{ title?: string; category?: string }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [inputText, setInputText] = useState("")
