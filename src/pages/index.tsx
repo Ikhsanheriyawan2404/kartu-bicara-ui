@@ -443,7 +443,10 @@ export default function TalkDeckApp() {
                 </Button>
               )}
 
-              <Button onClick={() => setCurrentScreen("landing")} variant="ghost" className="w-full text-gray-600">
+              <Button onClick={() => {
+                setQuestions([])
+                setCurrentScreen("landing")
+              }} variant="ghost" className="w-full text-gray-600">
                 Akhir Sesi
               </Button>
               {/* Footer */}
