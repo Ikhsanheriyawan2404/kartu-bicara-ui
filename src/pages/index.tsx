@@ -62,6 +62,8 @@ export default function TalkDeckApp() {
   const roomRef = useRef<Room>(null);
   const [_, setPlayers] = useState<Player[]>([]);
   const [myPlayer, setMyPlayer] = useState<Player | null>(null);
+  const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
+  const [categoryName, setCategoryName] = useState<string>("");
 
   useEffect(() => {
     if (myPlayer && turnPlayerId != null) {
@@ -69,6 +71,13 @@ export default function TalkDeckApp() {
       setIsPlayerTurn(isMyTurn);
     }
   }, [myPlayer, turnPlayerId]);
+
+  useEffect(() => {
+    if (currentQuestionId !== null && questions.length > 0) {
+      const questionIndex = questions.findIndex(q => q.id === currentQuestionId);
+      setCurrentCardIndex(questionIndex);
+    }
+  }, [currentQuestionId, questions]);
 
   const startGame = async (mode: GameMode) => {
     setGameMode(mode)
@@ -85,10 +94,25 @@ export default function TalkDeckApp() {
   }
 
   const flipCard = () => {
-    setIsCardFlipped(!isCardFlipped)
+    if (!isPlayerTurn) {
+      toast.info("Tunggu sebentar...", {
+        description: "Sekarang giliran partner kamu 💙",
+      });
+      return;
+    }
+    setIsCardFlipped(prev => {
+      const newFlip = !prev;
+      sendCardFlip(newFlip);
+      return newFlip;
+    });
   }
 
   const nextCard = () => {
+    if (gameMode === "multiplayer") {
+      sendAnswer()
+      return
+    }
+
     const newCardsPlayed = cardsPlayed + 1
     setCardsPlayed(newCardsPlayed)
 
@@ -97,10 +121,6 @@ export default function TalkDeckApp() {
     } else {
       setCurrentCardIndex((prev) => (prev + 1) % questions.length)
       setIsCardFlipped(false)
-      if (gameMode === "multiplayer") {
-        sendAnswer()
-        setIsPlayerTurn(!isPlayerTurn)
-      }
     }
   }
 
@@ -118,7 +138,7 @@ export default function TalkDeckApp() {
 
   const joinRoom = async () => {
     try {
-      const room: Room = await client.joinById("word_card_room", roomId);
+      const room: Room = await client.joinById(roomId);
 
       setupRoom(room);
     } catch (e) {
@@ -133,14 +153,33 @@ export default function TalkDeckApp() {
 
     const $ = getStateCallbacks(room);
 
+    $(room.state).listen("currentQuestionId", (currentValue: number, previousValue: number) => {
+      if (previousValue != undefined && currentValue !== previousValue) {
+        setCardsPlayed(prev => prev + 1);
+        setCurrentQuestionId(currentValue);
+        setIsCardFlipped(prev => {
+          const newFlip = !prev;
+          sendCardFlip(newFlip);
+          return newFlip;
+        });
+      }
+    });
+
+    $(room.state).listen("isCardFlipped", (currentValue: boolean) => {
+      setIsCardFlipped(currentValue);
+    });
+
     $(room.state).listen("isGameStarted", (currentValue: boolean) => {
-      console.log("isGameStarted changed:", currentValue);
       if (currentValue) {
         setCurrentScreen("game");
         setCardsPlayed(0);
         setCurrentCardIndex(0);
         setIsCardFlipped(false);
       }
+    });
+
+    $(room.state).listen("category", (category: {id: number, name:string}) => {
+      setCategoryName(category.name);
     });
 
     $(room.state).players.onAdd((player, sessionId) => {
@@ -185,8 +224,8 @@ export default function TalkDeckApp() {
       ]);
     });
 
-    room.onMessage("gameEnded", (message) => {
-      console.log("Game ended:", message);
+    room.onMessage("gameEnded", () => {
+      clearData()
       setCurrentScreen("session-end");
     });
   };
@@ -194,6 +233,14 @@ export default function TalkDeckApp() {
   const sendAnswer = () => {
     if (roomRef.current) {
       roomRef.current.send("answer");
+    }
+  }
+
+  const sendCardFlip = (newFlip: boolean) => {
+    if (roomRef.current) {
+      roomRef.current.send("card-flip", {
+        isCardFlipped: newFlip
+      });
     }
   }
 
@@ -289,6 +336,18 @@ export default function TalkDeckApp() {
         }, 1000); // delay 1 detik
       }
     }
+  };
+
+  function shouldShowNextCard(isCardFlipped: boolean, isPlayerTurn: boolean, gameMode: string) {
+    return isCardFlipped && (gameMode !== "multiplayer" || isPlayerTurn);
+  }
+
+  const clearData = () => {
+    setQuestions([]);
+    setPlayers([]);
+    setMyPlayer(null);
+    setCurrentQuestionId(null);
+    setRoomId("");
   };
 
   return (
@@ -441,7 +500,10 @@ export default function TalkDeckApp() {
               </Card>
             </div>
 
-            <Button onClick={() => setCurrentScreen("landing")} variant="ghost" className="w-full mt-6 text-gray-600">
+            <Button onClick={() => {
+              setCurrentScreen("landing")
+              setRoomId("")
+            }} variant="ghost" className="w-full mt-6 text-gray-600">
               Kembali ke menu utama
             </Button>
             {/* Footer */}
@@ -473,7 +535,9 @@ export default function TalkDeckApp() {
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm text-gray-600">Kartu {cardsPlayed + 1} dari 10</div>
                 <div className="text-sm text-gray-600 capitalize">
-                  {category === "couples" ? "❤️ Pasangan" : "🤝 Teman"}
+                    {gameMode === "solo"
+                    ? category === "couples" ? "❤️ Pasangan" : "🤝 Teman"
+                    : categoryName}
                 </div>
               </div>
               {gameMode === "multiplayer" && (
@@ -484,7 +548,7 @@ export default function TalkDeckApp() {
                 >
                   {isPlayerTurn
                     ? "✨ Giliranmu membacakan kartu"
-                    : "⏳ Tunggu pasanganmu giliran baca kartu..."}
+                    : `⏳ Tunggu ${categoryName}mu giliran baca kartu...`}
                 </div>
               )}
             </div>
@@ -532,7 +596,7 @@ export default function TalkDeckApp() {
 
             {/* Controls */}
             <div className="space-y-4">
-              {isCardFlipped && (
+              {shouldShowNextCard(isCardFlipped, isPlayerTurn, gameMode) && (
                 <Button
                   onClick={nextCard}
                   className="w-full h-14 text-lg bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 text-white rounded-xl shadow-lg"
@@ -543,10 +607,11 @@ export default function TalkDeckApp() {
               )}
 
               <Button onClick={() => {
-                setQuestions([])
+                clearData()
                 setCurrentScreen("landing")
+                if (gameMode == "multiplayer") setRoomId("")
               }} variant="ghost" className="w-full text-gray-600">
-                Akhir Sesi
+                Keluar
               </Button>
               {/* Footer */}
               <div className="fixed bottom-0 left-0 right-0 p-4 text-center">
@@ -617,12 +682,15 @@ export default function TalkDeckApp() {
               )}
 
               {!hasMoreQuestions && questions.length > 0 && (
-                <div className="text-center py-4 text-gray-500 text-sm">  Tidak ada pertanyaan lagi untuk ditampilkan</div>
+                <div className="text-center py-4 text-gray-500 text-sm"> Tidak ada pertanyaan lagi untuk ditampilkan</div>
               )}
             </div>
 
             {/* Back Button */}
-            <Button onClick={() => setCurrentScreen("landing")} variant="ghost" className="w-full mt-6 text-gray-600">
+            <Button onClick={() => {
+              clearData()
+              setCurrentScreen("landing")
+            }} variant="ghost" className="w-full mt-6 text-gray-600">
               Kembali ke menu utama
             </Button>
 
